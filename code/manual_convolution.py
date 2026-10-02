@@ -46,3 +46,90 @@ class ManualConv2d(tf.keras.layers.Layer):
         filter_height, filter_width, filter_in_channels, filter_out_channels = self.filters.shape
 
         # fill out the rest!
+        # check stride == 1
+        assert self.strides == [1, 1, 1, 1]
+
+        # check input channels == filter input channels
+        assert input_in_channels == filter_in_channels
+
+        # padding
+        if self.padding == "SAME":
+            total_pad_y = filter_height - 1
+            total_pad_x = filter_width - 1
+
+            # if odd padding put less on top/left
+            pad_top = total_pad_y // 2
+            pad_bottom = total_pad_y - pad_top
+
+            pad_left = total_pad_x // 2
+            pad_right = total_pad_x - pad_left
+
+        elif self.padding == "VALID":
+            pad_top = 0
+            pad_bottom = 0
+            pad_left = 0
+            pad_right = 0
+
+        else:
+            raise ValueError("padding must be 'SAME' or 'VALID'")
+
+        padded_inputs = tf.pad(
+            inputs,
+            [
+                [0, 0],
+                [pad_top, pad_bottom],
+                [pad_left, pad_right],
+                [0, 0]
+            ]
+        )
+
+        # output dim
+        # stride = 1
+        output_height = (in_height + pad_top + pad_bottom - filter_height) + 1
+
+        output_width = (in_width + pad_left + pad_right - filter_width) + 1
+
+        # conv
+        output_rows = []
+
+        for y in range(output_height):
+            output_cols = []
+
+            for x in range(output_width):
+
+                # shape = [batch, filter_height, filter_width, input_channels]
+                patch = padded_inputs[
+                    :,
+                    y:y + filter_height,
+                    x:x + filter_width,
+                    :
+                ]
+
+                # output channel dim=[batch, fh, fw, in_channels, 1]
+                patch = tf.expand_dims(patch, axis=-1)
+
+                # filters = [fh, fw, in_channels, out_channels]
+                # broadcasting shape = [batch, fh, fw, in_channels, out_channels]
+                multiplied = tf.multiply(patch, self.filters)
+
+                # sum over fh, fw, and input channels
+                # shape = [batch, out_channels]
+                conv_value = tf.reduce_sum(multiplied, axis=[1, 2, 3])
+
+                # bias
+                if self.use_bias:
+                    conv_value = conv_value + self.bias
+
+                output_cols.append(conv_value)
+
+            # [batch, output_width, out_channels]
+            output_row = tf.stack(output_cols, axis=1)
+            output_rows.append(output_row)
+
+        # [batch, output_height, output_width, out_channels]
+        output = tf.stack(output_rows, axis=1)
+
+        return tf.convert_to_tensor(
+            output,
+            dtype=tf.float32
+        )

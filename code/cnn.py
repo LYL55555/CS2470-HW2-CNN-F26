@@ -27,16 +27,69 @@ class CNN(CifarModel):
         # Initialize all hyperparameters
         self.loss_list = []
         self.batch_size = 64
-        self.input_width = ???
-        self.input_height = ???
-        self.image_channels = ???
+        self.input_width = 32
+        self.input_height = 32
+        self.image_channels = 3
         self.num_classes = len(classes)
 
-        self.hidden_layer_size = 320
+        self.hidden_layer_size = 256
 
         self.epsilon = 1e-3  # this is used for batch normalization only!
 
         # Fill the rest of this out!
+        self.conv1 = tf.keras.layers.Conv2D(
+            filters=32,
+            kernel_size=3,
+            strides=1,
+            padding="same",
+            activation="relu"
+        )
+
+        self.manual_conv1 = ManualConv2d(
+            filter_shape=[3, 3, 3, 32],
+            strides=[1, 1, 1, 1],
+            padding="SAME",
+            use_bias=True,
+            trainable=False
+        )
+
+        self.pool1 = tf.keras.layers.MaxPool2D(
+            pool_size=2,
+            strides=2
+        )
+
+        self.conv2 = tf.keras.layers.Conv2D(
+            filters=64,
+            kernel_size=3,
+            strides=1,
+            padding="same",
+            activation="relu"
+        )
+
+        self.pool2 = tf.keras.layers.MaxPool2D(
+            pool_size=2,
+            strides=2
+        )
+
+        self.conv3 = tf.keras.layers.Conv2D(
+            filters=128,
+            kernel_size=3,
+            strides=1,
+            padding="same",
+            activation="relu"
+        )
+
+        # fully connected
+        self.flatten = tf.keras.layers.Flatten()
+
+        self.dense1 = tf.keras.layers.Dense(
+            self.hidden_layer_size,
+            activation="relu"
+        )
+
+        self.output_layer = tf.keras.layers.Dense(
+            self.num_classes
+        )
 
     def call(self, inputs, is_testing=False):
         """
@@ -50,4 +103,28 @@ class CNN(CifarModel):
         # shape of filter = (filter_height, filter_width, in_channels, out_channels)
         # shape of strides = (batch_stride, height_stride, width_stride, channels_stride)
 
-        raise NotImplementedError("Implement me!")
+        if is_testing:
+            self.manual_conv1.set_weights(
+                self.conv1.kernel,
+                self.conv1.bias
+            )
+
+            x = self.manual_conv1(inputs)
+            x = tf.nn.relu(x)
+
+        else:
+            x = self.conv1(inputs)
+        x = self.pool1(x)
+
+        x = self.conv2(x)
+        x = self.pool2(x)
+
+        x = self.conv3(x)
+
+        x = self.flatten(x)
+
+        x = self.dense1(x)
+
+        logits = self.output_layer(x)
+
+        return logits
