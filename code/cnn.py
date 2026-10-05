@@ -35,6 +35,7 @@ class CNN(CifarModel):
         self.hidden_layer_size = 256
 
         self.epsilon = 1e-3  # this is used for batch normalization only!
+        self.use_manual_conv = True
 
         # Fill the rest of this out!
         self.conv1 = tf.keras.layers.Conv2D(
@@ -105,7 +106,7 @@ class CNN(CifarModel):
         # shape of filter = (filter_height, filter_width, in_channels, out_channels)
         # shape of strides = (batch_stride, height_stride, width_stride, channels_stride)
 
-        if is_testing:
+        if is_testing and self.use_manual_conv:
             self.manual_conv1.set_weights(
                 self.conv1.kernel,
                 self.conv1.bias

@@ -45,6 +45,20 @@ def train(model, optimizer, train_inputs, train_labels):
         )
 
         # augmentation training
+        # pad to a 40*40
+        # batch_inputs = tf.pad(
+        #     batch_inputs,
+        #     [[0, 0], [4, 4], [4, 4], [0, 0]],
+        #     mode="REFLECT"
+        # )
+
+        # # crop back to 32*32
+        # batch_inputs = tf.image.random_crop(
+        #     batch_inputs,
+        #     size=[tf.shape(batch_inputs)[0], 32, 32, 3]
+        # )
+
+        # horizontal flip
         batch_inputs = tf.image.random_flip_left_right(batch_inputs)
 
         # forward pass
@@ -253,7 +267,7 @@ def main():
     # Train your model
     # TODO: assignment.main() pt 4
     # Test your model
-    num_epochs = 20
+    num_epochs = 25
 
     best_test_accuracy = 0.0
     best_test_preds = None
