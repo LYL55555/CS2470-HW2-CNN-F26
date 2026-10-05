@@ -93,7 +93,7 @@ def test(model, test_inputs, test_labels):
 
         logits = model(batch_inputs, is_testing=True)
 
-        all_preds.append(logits)
+        all_preds.append(tf.argmax(logits, axis=1, output_type=tf.int32) + 3)
 
         # num correct in the batch
         predicted_classes = tf.argmax(logits, axis=1)
