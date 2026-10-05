@@ -87,6 +87,8 @@ class CNN(CifarModel):
             activation="relu"
         )
 
+        self.dropout = tf.keras.layers.Dropout(0.3)
+
         self.output_layer = tf.keras.layers.Dense(
             self.num_classes
         )
@@ -124,6 +126,8 @@ class CNN(CifarModel):
         x = self.flatten(x)
 
         x = self.dense1(x)
+
+        x = self.dropout(x, training=not is_testing)
 
         logits = self.output_layer(x)
 

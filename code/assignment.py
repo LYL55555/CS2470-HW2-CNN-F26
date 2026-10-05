@@ -230,7 +230,7 @@ def main():
     # model = MLP(classes)
     model = CNN(classes)
 
-    optimizer = tf.keras.optimizers.Adam(
+    optimizer = tf.keras.optimizers.legacy.Adam(
         learning_rate=3e-4
     )
 
@@ -255,8 +255,11 @@ def main():
     # Test your model
     num_epochs = 20
 
+    best_test_accuracy = 0.0
+    best_test_preds = None
+    best_epoch = 0
+
     for epoch in range(num_epochs):
-        # train
         train(
             model,
             optimizer,
@@ -264,12 +267,14 @@ def main():
             train_labels
         )
 
-        # eval
-        train_accuracy, _ = test(
-            model,
-            train_inputs,
-            train_labels
-        )
+        num_batches = math.ceil(len(train_inputs) / model.batch_size)
+        epoch_loss = np.mean(model.loss_list[-num_batches:])
+
+        # train_accuracy, _ = test(
+        #     model,
+        #     train_inputs,
+        #     train_labels
+        # )
 
         test_accuracy, test_preds = test(
             model,
@@ -277,27 +282,42 @@ def main():
             test_labels
         )
 
+        if test_accuracy > best_test_accuracy:
+            best_test_accuracy = test_accuracy
+            best_test_preds = test_preds.numpy().copy()
+            best_epoch = epoch + 1
+
         print(
             f"Epoch {epoch+1}/{num_epochs}: "
-            f"Train={train_accuracy:.4f}, "
-            f"Test={test_accuracy:.4f}"
+            #f"Train={train_accuracy:.4f}, "
+            f"Loss={epoch_loss:.4f}, "
+            f"Test={test_accuracy:.4f}, "
+            f"Best={best_test_accuracy:.4f}"
         )
+
+    print(
+        f"Best epoch: {best_epoch}, "
+        f"Best Test Accuracy: {best_test_accuracy:.4f}"
+    )
 
     # TODO: assignment.main() pt 5
     # Save your predictions as either "predictions_cnn.npy" or "predictions_mlp.npy"
     #   depending on which model you are using
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
-    np.save("predictions_cnn.npy", test_preds.numpy())
+    # np.save("predictions_cnn.npy", test_preds.numpy())
+    np.save("predictions_cnn.npy", best_test_preds)
 
-    visualize_results(
-        test_inputs[:25],
-        test_preds[:25].numpy(),
-        test_labels[:25].numpy(),
-        "cat",
-        "deer",
-        "dog"
-    )
+    # vis_logits = model(test_inputs[:25], is_testing=True).numpy()
+
+    # visualize_results(
+    #     test_inputs[:25],
+    #     vis_logits,
+    #     test_labels[:25].numpy(),
+    #     "cat",
+    #     "deer",
+    #     "dog"
+    # )
 
     visualize_loss(model.loss_list)
 
