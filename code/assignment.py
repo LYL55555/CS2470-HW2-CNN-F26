@@ -274,6 +274,10 @@ def main():
     best_epoch = 0
 
     for epoch in range(num_epochs):
+
+        if epoch == 18:
+            optimizer.learning_rate.assign(1e-4)
+
         train(
             model,
             optimizer,

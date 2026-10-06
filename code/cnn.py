@@ -80,6 +80,11 @@ class CNN(CifarModel):
             activation="relu"
         )
 
+        self.pool3 = tf.keras.layers.MaxPool2D(
+            pool_size=2,
+            strides=2
+        )
+
         # fully connected
         self.flatten = tf.keras.layers.Flatten()
 
@@ -123,6 +128,7 @@ class CNN(CifarModel):
         x = self.pool2(x)
 
         x = self.conv3(x)
+        x = self.pool3(x)
 
         x = self.flatten(x)
 
