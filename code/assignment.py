@@ -228,8 +228,8 @@ def main():
     
     # TODO: assignment.main() pt 1
     # Load your testing and training data using the get_data function
-    train_inputs, train_labels = get_data(LOCAL_TRAIN_FILE, classes)
-    test_inputs, test_labels = get_data(LOCAL_TEST_FILE, classes)
+    train_inputs, train_labels = get_data(AUTOGRADER_TRAIN_FILE, classes)
+    test_inputs, test_labels = get_data(AUTOGRADER_TEST_FILE, classes)
 
     print("Train inputs shape:", train_inputs.shape)
     print("Train labels shape:", train_labels.shape)
