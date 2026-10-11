@@ -45,18 +45,19 @@ def train(model, optimizer, train_inputs, train_labels):
         )
 
         # augmentation training
-        # pad to a 40*40
-        batch_inputs = tf.pad(
-            batch_inputs,
-            [[0, 0], [4, 4], [4, 4], [0, 0]],
-            mode="REFLECT"
-        )
+        if isinstance(model, CNN):
+            # pad to a 40*40
+            batch_inputs = tf.pad(
+                batch_inputs,
+                [[0, 0], [4, 4], [4, 4], [0, 0]],
+                mode="REFLECT"
+            )
 
-        # crop back to 32*32
-        batch_inputs = tf.image.random_crop(
-            batch_inputs,
-            size=[tf.shape(batch_inputs)[0], 32, 32, 3]
-        )
+            # crop back to 32*32
+            batch_inputs = tf.image.random_crop(
+                batch_inputs,
+                size=[tf.shape(batch_inputs)[0], 32, 32, 3]
+            )
 
         # horizontal flip
         batch_inputs = tf.image.random_flip_left_right(batch_inputs)
@@ -245,7 +246,7 @@ def main():
     model = CNN(classes)
 
     optimizer = tf.keras.optimizers.legacy.Adam(
-        learning_rate=3e-4
+        learning_rate=1e-3
     )
 
     # forward pass check
@@ -272,10 +273,11 @@ def main():
     best_test_accuracy = 0.0
     best_test_preds = None
     best_epoch = 0
+    decay_epoch = 18 if isinstance(model, MLP) else 21
 
     for epoch in range(num_epochs):
 
-        if epoch == 18:
+        if epoch == decay_epoch:
             optimizer.learning_rate.assign(1e-4)
 
         train(
@@ -323,8 +325,8 @@ def main():
     #   depending on which model you are using
     # You will submit these prediction files to the autograder with predictions
     #    For the CAT, DEER, and DOG classes
-    # np.save("predictions_cnn.npy", test_preds.numpy())
-    np.save("predictions_cnn.npy", best_test_preds)
+    predictions_file = "predictions_mlp.npy" if isinstance(model, MLP) else "predictions_cnn.npy"
+    np.save(predictions_file, best_test_preds)
 
     # vis_logits = model(test_inputs[:25], is_testing=True).numpy()
 

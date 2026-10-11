@@ -30,14 +30,18 @@ class MLP(CifarModel):
         self.input_height = 32
         self.image_channels = 3
         self.num_classes = len(classes)
-        self.hidden_layer_size = 512
+        self.hidden_layer_size = 256
         
         # TODO mlp.MLP.__init__(): Initialize your Layers here.
 
-        self.hidden_layer1 = tf.keras.layers.Dense(256, activation="relu")
+        self.hidden_layer1 = tf.keras.layers.Dense(256, activation=None)
         self.hidden_layer2 = tf.keras.layers.Dense(128, activation="relu")
         self.hidden_layer3 = tf.keras.layers.Dense(64, activation="relu")
         self.output_layer = tf.keras.layers.Dense(self.num_classes)
+        self.bn1 = tf.keras.layers.BatchNormalization(
+            epsilon=1e-3,
+            momentum=0.99
+        )
 
     def call(self, inputs, is_testing=False):
         """
@@ -53,6 +57,8 @@ class MLP(CifarModel):
 
         # dense layers
         x = self.hidden_layer1(x)
+        x = self.bn1(x, training=not is_testing)
+        x = tf.nn.relu(x)
         x = self.hidden_layer2(x)
         x = self.hidden_layer3(x)
 

@@ -5,3 +5,15 @@ __pycache__/
 **/.DS_Store
 __pycache__/
 data/
+ablation_runs/
+mlp_ablation_runs/
+mlp_round2_runs/
+mlp_round2_tests/
+code/run_ablation.py
+code/ablation_configs.json
+code/run_step_seeds.py
+code/step_seed_configs.json
+code/run_mlp_ablation.py
+code/mlp_configs.json
+code/run_mlp_round2.py
+code/mlp_round2_configs.json
